@@ -128,5 +128,13 @@ document.getElementById("btn-show-table").onclick = () => {
 
 document.getElementById("btn-apply-filters").onclick = applyFilters;
 
+document.getElementById("btn-reset-filters").onclick = () => {
+  document.getElementById("filter-date").value = "";
+  document.getElementById("filter-weekday").value = "";
+  renderChart(rawData);
+  renderTable(rawData);
+};
+
+
 // 初回読み込み
 window.onload = fetchData;
