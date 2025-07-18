@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Podcastランキング推移</title>
+  <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f9f9f9;
+    }
+    h1 {
+      text-align: center;
+    }
+    #chart {
+      width: 100%;
+      max-width: 900px;
+      height: 400px;
+      margin: 0 auto 40px auto;
+    }
+    table {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      border-collapse: collapse;
+      background: white;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background: #eee;
+    }
+  </style>
+</head>
+<body>
+  <h1>Podcastランキング推移</h1>
+  <div id="chart"></div>
+  <table id="data-table">
+    <thead>
+      <tr>
+        <th>日付</th>
+        <th>曜日</th>
+        <th>時刻</th>
+        <th>ランキング</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    fetch('data.json')
+      .then(response => response.json())
+      .then(data => {
+        const formatHour = h => `${String(h).padStart(2, '0')}:00`;
+
+        // ✅ 表：新しい順（降順）
+        const sortedForTable = [...data].sort((a, b) => {
+          return (`${b.日付} ${b.時刻}`).localeCompare(`${a.日付} ${a.時刻}`);
+        });
+
+        const tableBody = document.querySelector("#data-table tbody");
+        sortedForTable.forEach(row => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${row.日付}</td>
+            <td>${row.曜日}</td>
+            <td>${formatHour(row.時刻)}</td>
+            <td>${row.順位}</td>
+          `;
+          tableBody.appendChild(tr);
+        });
+
+        // ✅ グラフ：古い順（昇順）
+        const sortedForChart = [...data].sort((a, b) => {
+          return (`${a.日付} ${a.時刻}`).localeCompare(`${b.日付} ${b.時刻}`);
+        });
+
+        const chartData = sortedForChart.map(d => ({
+          name: `${d.日付} ${formatHour(d.時刻)}`,
+          value: d.順位
+        }));
+
+        const chartDom = document.getElementById('chart');
+        const myChart = echarts.init(chartDom);
+
+        const option = {
+          title: { text: 'ランキング推移' },
+          tooltip: { trigger: 'axis' },
+          xAxis: {
+            type: 'category',
+            data: chartData.map(item => item.name),
+            axisLabel: { rotate: 45 }
+          },
+          yAxis: {
+            type: 'value',
+            inverse: true,
+            name: 'ランキング',
+            minInterval: 1
+          },
+          series: [{
+            data: chartData.map(item => item.value),
+            type: 'line',
+            smooth: true
+          }]
+        };
+
+        myChart.setOption(option);
+      })
+      .catch(error => {
+        document.body.innerHTML += `<p style="color:red;">データ読み込みエラー: ${error}</p>`;
+      });
+  </script>
+</body>
+</html>
