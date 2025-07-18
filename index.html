@@ -46,6 +46,16 @@
     .controls > * {
       margin-right: 10px;
     }
+
+    #filter-section {
+      margin-bottom: 10px;
+    }
+    #filter-section label {
+      margin-right: 5px;
+    }
+    #filter-section select {
+      margin-right: 15px;
+    }
   </style>
 </head>
 <body>
@@ -57,18 +67,25 @@
     <button id="btn-show-table">表表示</button>
 
     <input type="date" id="filter-date" />
-    <select id="filter-weekday">
-      <option value="">曜日を選択</option>
-      <option value="月">月</option>
-      <option value="火">火</option>
-      <option value="水">水</option>
-      <option value="木">木</option>
-      <option value="金">金</option>
-      <option value="土">土</option>
-      <option value="日">日</option>
-    </select>
-    <button id="btn-apply-filters">絞り込み</button>
-  </div>
+    <div id="filter-section">
+      <label for="filter-date">日付:</label>
+      <select id="filter-date"></select>
+
+      <label for="filter-weekday">曜日:</label>
+      <select id="filter-weekday">
+        <option value="">すべて</option>
+        <option value="月">月</option>
+        <option value="火">火</option>
+        <option value="水">水</option>
+        <option value="木">木</option>
+        <option value="金">金</option>
+        <option value="土">土</option>
+        <option value="日">日</option>
+      </select>
+
+      <button id="btn-apply-filters">絞り込み</button>
+    </div>
+
 
   <!-- グラフ -->
   <div id="chart-container">
