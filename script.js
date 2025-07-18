@@ -95,6 +95,81 @@ function applyFilters() {
   renderTable(filtered);
 }
 
+fetch("data.json")
+  .then(res => res.json())
+  .then(data => {
+    const labels = data.map(d => `${d["日付"]} ${d["時刻"]}`);
+    const rankings = data.map(d => d["ランキング"]);
+
+    // グラフ生成
+    const ctx = document.getElementById('rankingChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'ランキング推移',
+          data: rankings,
+          borderWidth: 2,
+          fill: false,
+          tension: 0.3,
+          borderColor: 'steelblue',
+          pointRadius: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: {
+            ticks: {
+              maxRotation: 45,
+              minRotation: 45,
+              autoSkip: true,
+              maxTicksLimit: 20
+            }
+          },
+          y: {
+            reverse: true, // 上位ほど上に
+            suggestedMin: 1
+          }
+        }
+      }
+    });
+
+    // 表を生成
+    const tbody = document.querySelector("#rankingTable tbody");
+    data.reverse().forEach(d => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${d["日付"]}</td><td>${d["曜日"]}</td><td>${d["時刻"]}</td><td>${d["ランキング"]}</td>`;
+      tbody.appendChild(tr);
+    });
+  });
+
+
+data.reverse().forEach(d => {
+  const tr = document.createElement("tr");
+  tr.innerHTML = `<td>${d["日付"]}</td><td>${d["曜日"]}</td><td>${d["時刻"]}</td><td>${d["ランキング"]}</td>`;
+  document.querySelector("#rankingTable tbody").appendChild(tr);
+});
+
+const labels = data.map(d => {
+  const hour = String(d["時刻"]).padStart(2, '0');
+  return `${d["日付"]} ${hour}:00`;
+});
+
+
+
+function showChart() {
+  document.getElementById("rankingChart").style.display = "block";
+  document.getElementById("rankingTableContainer").style.display = "none";
+}
+
+function showTable() {
+  document.getElementById("rankingChart").style.display = "none";
+  document.getElementById("rankingTableContainer").style.display = "block";
+}
+
+
 document.getElementById("btn-show-chart").onclick = () => {
   document.getElementById("chart-container").style.display = "block";
   document.getElementById("table-container").style.display = "none";

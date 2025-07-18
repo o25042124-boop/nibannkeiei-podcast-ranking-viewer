@@ -52,6 +52,30 @@
     <tbody></tbody>
   </table>
 
+
+  <div style="margin-bottom: 10px;">
+    <button onclick="showChart()">グラフ表示</button>
+    <button onclick="showTable()">表表示</button>
+  </div>
+
+  <!-- グラフ -->
+  <canvas id="rankingChart" width="900" height="400"></canvas>
+
+  <!-- 表 -->
+  <div id="rankingTableContainer" style="display:none; margin-top: 20px;">
+    <table id="rankingTable" border="1" cellspacing="0" cellpadding="5">
+      <thead>
+        <tr>
+          <th>日付</th>
+          <th>曜日</th>
+          <th>時刻</th>
+          <th>ランキング</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
   <script>
     fetch('data.json')
       .then(response => response.json())
