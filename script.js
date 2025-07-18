@@ -6,13 +6,30 @@ async function fetchData() {
   try {
     const response = await fetch("data.json");
     rawData = await response.json();
+    populateDateOptions(rawData); // ★ここで呼び出す
     renderChart(rawData);
     renderTable(rawData);
   } catch (error) {
-    document.getElementById("chart").innerHTML =
-      `<p style="color:red;">データ読み込みエラー: ${error}</p>`;
+    document.getElementById("chart").innerHTML = `<p style="color:red;">データ読み込みエラー: ${error}</p>`;
   }
 }
+
+function populateDateOptions(data) {
+  const dateSet = new Set(data.map(d => d["日付"]));
+  const select = document.getElementById("filter-date");
+
+  select.innerHTML = '<option value="">すべて</option>'; // 初期化
+
+  Array.from(dateSet)
+    .sort((a, b) => new Date(b) - new Date(a)) // 新しい日付順
+    .forEach(date => {
+      const option = document.createElement("option");
+      option.value = date;
+      option.textContent = date;
+      select.appendChild(option);
+    });
+}
+
 
 // グラフ描画
 function renderChart(data) {
