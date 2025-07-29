@@ -9,6 +9,8 @@ async function fetchData() {
     populateDateOptions(rawData); // ★ここで呼び出す
     renderChart(rawData);
     renderTable(rawData);
+    updateTimestamp(); // ← データ取得後に更新時刻表示
+
   } catch (error) {
     document.getElementById("chart").innerHTML = `<p style="color:red;">データ読み込みエラー: ${error}</p>`;
   }
@@ -138,3 +140,26 @@ document.getElementById("btn-reset-filters").onclick = () => {
 
 // 初回読み込み
 window.onload = fetchData;
+
+// データ更新時間を表示する関数
+function updateTimestamp() {
+  const now = new Date();
+  const formatted = now.toLocaleString("ja-JP", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  });
+  document.getElementById("last-updated").innerText = `最終更新日時: ${formatted}`;
+}
+
+// ページ読み込み時に一度データ取得
+window.onload = fetchData;
+
+// 5分おき（300000ミリ秒）に自動更新
+setInterval(fetchData, 300000);
+
+
+
