@@ -105,11 +105,20 @@ function renderTable(data) {
 
 // 絞り込みフィルタ
 function applyFilters() {
-  const date = document.getElementById("filter-date").value;
+  const dateInput = document.getElementById("filter-date").value;
   const weekday = document.getElementById("filter-weekday").value;
 
+  // "2025-07-29" → "2025/07/29"
+  const formattedDate = dateInput
+    ? new Date(dateInput).toLocaleDateString("ja-JP", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+      }).replace(/\//g, "/")  // スラッシュ形式に変換
+    : "";
+
   const filtered = rawData.filter(d =>
-    (!date || d["日付"] === date) &&
+    (!formattedDate || d["日付"] === formattedDate) &&
     (!weekday || d["曜日"] === weekday)
   );
 
