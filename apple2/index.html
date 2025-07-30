@@ -3,30 +3,65 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Podcast Ranking Viewer</title>
+  <title>Podcast ranking viewer</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { font-family: sans-serif; margin: 20px; }
-    #chart-container, #table-container { width: 100%; max-width: 1000px; height: 500px; margin-top: 20px; }
-    canvas { width: 100%; height: 100%; }
-    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 6px 12px; text-align: center; }
-    th { background-color: #f4f4f4; }
-    .controls { margin-bottom: 10px; }
-    .controls > * { margin-right: 10px; }
+    body {
+      font-family: sans-serif;
+      margin: 20px;
+    }
+
+    #chart-container, #table-container {
+      width: 100%;
+      max-width: 1000px;
+      height: 500px;
+      margin-top: 20px;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px 12px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #f4f4f4;
+    }
+
+    .controls {
+      margin-bottom: 10px;
+    }
+
+    .controls > * {
+      margin-right: 10px;
+    }
+   
   </style>
 </head>
 <body>
-  <h1>Podcast Ranking Viewer</h1>
+  <h1>ApplePodcast 総合ランキング遷移</h1>
   <p id="last-updated" style="color: gray;">最終更新日時: 取得中...</p>
 
+
+  <!-- 操作ボタン -->
   <div class="controls">
     <button id="btn-show-chart">グラフ表示</button>
     <button id="btn-show-table">表表示</button>
 
     <div id="filter-section">
       <label for="filter-date">日付:</label>
-      <select id="filter-date"></select>
+      <input type="date" id="filter-date" />
 
       <label for="filter-weekday">曜日:</label>
       <select id="filter-weekday">
@@ -41,14 +76,16 @@
       </select>
 
       <button id="btn-apply-filters">絞り込み</button>
-      <button id="btn-reset-filters">リセット</button>
+      <button id="btn-reset-filters">リセット</button> 
     </div>
-  </div>
 
+
+  <!-- グラフ -->
   <div id="chart-container">
     <canvas id="chart"></canvas>
   </div>
 
+  <!-- 表 -->
   <div id="table-container" style="display: none;">
     <table id="ranking-table">
       <thead>
@@ -59,10 +96,13 @@
           <th>ランキング</th>
         </tr>
       </thead>
-      <tbody id="ranking-table-body"></tbody>
+      <tbody id="ranking-table-body">
+        <!-- JSで自動追加 -->
+      </tbody>
     </table>
   </div>
 
+  <!-- スクリプト読み込み -->
   <script src="script.js"></script>
 </body>
 </html>
