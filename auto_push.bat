@@ -5,4 +5,4 @@ python rank_log.py
 git pull --rebase origin main
 git add .
 git commit -m "Daily auto-update"
-git push origin main
+git push
