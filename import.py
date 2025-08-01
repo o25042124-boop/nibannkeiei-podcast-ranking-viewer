@@ -9,16 +9,18 @@ import json
 import os
 import re
 from datetime import datetime
+import pandas as pd
 
 # --- 設定 ---
 LOGIN_URL = "https://podcastranking.jp/login"
 BASE_URL = "https://podcastranking.jp/1734101813/chart.json?page={page}&category=1491"
 OUTPUT_DIR = "apple3"
 OUTPUT_JSON_PATH = os.path.join(OUTPUT_DIR, "apple3.json")
+EXCEL_OUTPUT_PATH = "apple3.xlsx"
 EMAIL = "yasuhide.katsumi@o2-inc.com"
 PASSWORD = "o2pkudanshita"
 MAX_PAGE = 74
-CUTOFF_DATETIME = datetime(2024, 3, 5)
+CUTOFF_DATETIME = datetime(2024, 3, 6, 17, 0)  # ← 17:00 未満は除外
 
 # --- SeleniumでログインしてCookie取得 ---
 options = Options()
@@ -104,7 +106,7 @@ for time_str, rank in combined_data.items():
 
         dt = parsed_date.replace(year=current_year, hour=hour_int)
 
-        # ✅ 2024/3/5以前の情報は除外
+        # ✅ 2024/3/6 17:00 未満は除外
         if dt < CUTOFF_DATETIME:
             continue
 
@@ -121,11 +123,18 @@ for time_str, rank in combined_data.items():
     except Exception as e:
         print(f"⚠ パースエラー: {time_str} → {e}")
 
-# --- JSON保存（上書き） ---
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+# --- 並べ替え＆保存準備 ---
 entries.sort(key=lambda x: (x["日付"], x["時刻"]))
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
+# --- JSON保存（上書き） ---
 with open(OUTPUT_JSON_PATH, "w", encoding="utf-8") as f:
     json.dump(entries, f, ensure_ascii=False, indent=2)
+print(f"✅ JSON保存完了（{len(entries)}件）: {OUTPUT_JSON_PATH}")
 
-print(f"\n✅ apple3.json 保存完了（{len(entries)}件）: {OUTPUT_JSON_PATH}")
+# --- Excel保存（上書き） ---
+df = pd.DataFrame(entries)
+df = df[["日付", "曜日", "時刻", "ランキング"]]
+df.sort_values(by=["日付", "時刻"], inplace=True)
+df.to_excel(EXCEL_OUTPUT_PATH, index=False)
+print(f"✅ Excel保存完了（{len(df)}件）: {EXCEL_OUTPUT_PATH}")
