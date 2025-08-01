@@ -102,6 +102,10 @@ for time_str, rank in combined_data.items():
 
         # 完成日時生成
         dt = parsed_date.replace(year=current_year, hour=hour_int)
+
+        if dt < datetime(2024, 3, 5):
+            continue  # このデータはスキップ（転記しない）
+
         date_str = dt.strftime("%Y/%m/%d")
         weekday = ["月", "火", "水", "木", "金", "土", "日"][dt.weekday()]
 
