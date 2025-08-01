@@ -73,6 +73,9 @@ print(f"📦 合計エントリ数: {len(combined_data)}")
 
 # --- apple1形式に変換 ---
 entries = []
+current_year = datetime.now().year  # 例：2025
+last_month = None
+year_switched = False
 
 for time_str, rank in combined_data.items():
     try:
@@ -86,31 +89,32 @@ for time_str, rank in combined_data.items():
         date_part, hour = match.groups()
         parsed_date = datetime.strptime(date_part, "%m/%d")
         hour_int = int(hour)
+        month = parsed_date.month
 
-        # 判定基準日時（固定）
-        cutoff = datetime(2025, 8, 1, 14, 30)
+        # 年切り替え検出：月が「進む → 戻る」（例：1 → 12）
+        if last_month is not None and not year_switched:
+            if month > last_month:
+                current_year -= 1
+                year_switched = True
+                print(f"🔄 年度切り替え検出 → 年: {current_year}")
 
-        # 仮のdatetime（今年の年を使って作る）
-        temp_dt = parsed_date.replace(year=cutoff.year, hour=hour_int)
+        last_month = month
 
-        # 年を切り替え
-        if temp_dt >= cutoff:
-            dt = temp_dt.replace(year=2024)
-        else:
-            dt = temp_dt  # そのまま2025年
-
+        # 完成日時生成
+        dt = parsed_date.replace(year=current_year, hour=hour_int)
         date_str = dt.strftime("%Y/%m/%d")
         weekday = ["月", "火", "水", "木", "金", "土", "日"][dt.weekday()]
 
         entries.append({
             "日付": date_str,
             "曜日": weekday,
-            "時刻": int(hour),
+            "時刻": hour_int,
             "ランキング": int(rank)
         })
 
     except Exception as e:
         print(f"⚠ パースエラー: {time_str} → {e}")
+
 
 # --- 保存 ---
 os.makedirs(OUTPUT_DIR, exist_ok=True)
