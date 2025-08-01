@@ -4,5 +4,5 @@ python rank_log.py
 
 git pull --rebase origin main
 git add .
-git commit -m "Daily auto-update"
+git commit -m "Daily auto-update and Updated apple json and excel files"
 git push origin main
