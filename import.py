@@ -103,6 +103,10 @@ for page, time_str, rank in raw_data:
         print(f"⚠ 年度再設定失敗: {dt_tmp} → スキップ")
         continue
 
+    # 2025年3月2日以降はランキングを修正
+    if dt_tmp >= datetime(2025, 3, 2):
+        rank = 101  # 2025年3月2日以降はランキング101に修正
+
     # 除外条件
     if dt_tmp < CUTOFF_DATETIME:
         continue
