@@ -84,7 +84,21 @@ for time_str, rank in combined_data.items():
             continue
 
         date_part, hour = match.groups()
-        dt = datetime.strptime(date_part, "%m/%d").replace(year=datetime.now().year)
+        parsed_date = datetime.strptime(date_part, "%m/%d")
+        hour_int = int(hour)
+
+        # 判定基準日時（固定）
+        cutoff = datetime(2025, 8, 1, 14, 30)
+
+        # 仮のdatetime（今年の年を使って作る）
+        temp_dt = parsed_date.replace(year=cutoff.year, hour=hour_int)
+
+        # 年を切り替え
+        if temp_dt >= cutoff:
+            dt = temp_dt.replace(year=2024)
+        else:
+            dt = temp_dt  # そのまま2025年
+
         date_str = dt.strftime("%Y/%m/%d")
         weekday = ["月", "火", "水", "木", "金", "土", "日"][dt.weekday()]
 
