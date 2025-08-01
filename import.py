@@ -12,9 +12,9 @@ from datetime import datetime
 
 # --- 設定 ---
 LOGIN_URL = "https://podcastranking.jp/login"
-BASE_URL = "https://podcastranking.jp/1734101813/chart.json?page={page}&category=26"
-OUTPUT_DIR = "apple2"
-OUTPUT_JSON_PATH = os.path.join(OUTPUT_DIR, "apple2.json")
+BASE_URL = "https://podcastranking.jp/1734101813/chart.json?page={page}&category=1491"
+OUTPUT_DIR = "apple3"
+OUTPUT_JSON_PATH = os.path.join(OUTPUT_DIR, "apple3.json")
 EMAIL = "yasuhide.katsumi@o2-inc.com"
 PASSWORD = "o2pkudanshita"
 
@@ -127,4 +127,4 @@ entries.sort(key=lambda x: (x["日付"], x["時刻"]))  # 昇順：古い→新�
 with open(OUTPUT_JSON_PATH, "w", encoding="utf-8") as f:
     json.dump(entries, f, ensure_ascii=False, indent=2)
 
-print(f"\n✅ apple2.json 保存完了: {OUTPUT_JSON_PATH}")
+print(f"\n✅ apple3.json 保存完了: {OUTPUT_JSON_PATH}")
