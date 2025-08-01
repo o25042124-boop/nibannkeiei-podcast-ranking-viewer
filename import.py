@@ -19,9 +19,9 @@ EXCEL_PATH  = "spotify.xlsx"
 EMAIL       = "yasuhide.katsumi@o2-inc.com"
 PASSWORD    = "o2pkudanshita"
 
-MAX_PAGE        = 126
+MAX_PAGE        = 74
 CUTOFF_DATETIME = datetime(2024, 3, 6, 17, 0)
-YEAR_SPLIT_PAGE = 83  # このページ以降を2024年とみなす
+YEAR_SPLIT_PAGE = 31  # このページ以降を2024年とみなす
 # ------------------------------------
 
 # ---------- Selenium ログイン ----------
@@ -68,6 +68,8 @@ for page in range(1, MAX_PAGE + 1):
 print(f"✅ 収集完了: {len(raw_data)} 件")
 
 # ---------- 年度推定ロジック ----------
+
+# 年度決定ロジックの修正
 entries = []
 for page, time_str, rank in raw_data:
     m = re.match(r"(\d{2}/\d{2})\([^)]*\)\s*(\d{2}):\d{2}", time_str) \
@@ -89,7 +91,8 @@ for page, time_str, rank in raw_data:
     elif page < YEAR_SPLIT_PAGE:
         year = 2025
     else:  # page == YEAR_SPLIT_PAGE
-        if dt_tmp.month == 1:
+        # もしCUTOFF_DATETIMEより前なら、2025年として処理する
+        if dt_tmp < CUTOFF_DATETIME:
             year = 2025
         else:
             year = 2024
@@ -110,6 +113,7 @@ for page, time_str, rank in raw_data:
         "時刻": dt_tmp.hour,
         "ランキング": int(rank)
     })
+
 
 # ---------- 保存 ----------
 entries.sort(key=lambda x: (x["日付"], x["時刻"]))
