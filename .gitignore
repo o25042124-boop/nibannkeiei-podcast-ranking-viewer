@@ -1,0 +1,22 @@
+# --- Python キャッシュ・ログファイル ---
+__pycache__/
+*.pyc
+*.pyo
+*.log
+
+# --- Jupyter ノートブックのチェックポイント ---
+.ipynb_checkpoints/
+
+# --- VSCode や IDE の設定 ---
+.vscode/
+.idea/
+
+# --- OSごとの不要ファイル ---
+.DS_Store               # macOS
+Thumbs.db              # Windows
+desktop.ini
+
+# --- 一時ファイルやバックアップファイル ---
+*.bak
+*.tmp
+*.swp

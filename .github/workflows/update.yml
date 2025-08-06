@@ -1,0 +1,50 @@
+name: Daily Podcast Update
+
+on:
+  schedule:
+
+    - cron: '10 0 * * *'   # JST 09:10 # 日本時間9:10,12:10,15:10,18:10,22:10（UTCで-9時間）
+    - cron: '10 3 * * *'   # JST 12:10
+    - cron: '10 6 * * *'   # JST 15:10
+    - cron: '10 9 * * *'   # JST 18:10
+    - cron: '10 13 * * *'  # JST 22:10
+    - cron: '10 22 * * *'  # JST 7:10
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests selenium pandas openpyxl
+
+    - name: Run Python script
+      env:
+        PODCAST_EMAIL: ${{ secrets.PODCAST_EMAIL }}
+        PODCAST_PASSWORD: ${{ secrets.PODCAST_PASSWORD }}
+      run: python rank_log.py
+
+    - name: Commit and push changes
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git fetch origin main
+        git add .
+        git commit -m "daily auto push: $(date -u '+%Y-%m-%d %H:%M UTC')" || echo "No changes"
+        git push origin HEAD:main || echo "No changes to push"
+
+    - name: Pull latest before push
+      run: |
+        git pull --rebase origin main || git rebase --skip || true
+
