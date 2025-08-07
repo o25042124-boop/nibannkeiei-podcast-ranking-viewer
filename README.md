@@ -4,7 +4,7 @@
 
 ## ✨ 特徴
 
-* GitHub Actionsにより毎日ランキングを自動取得（9:00 / 18:00 JST）
+* GitHub Actionsによりランキングを自動取得
 * JSONとExcel形式でランキング履歴を保存
 * GitHub PagesでWebビューアとして公開
 * セキュアなログイン情報（環境変数で管理）
