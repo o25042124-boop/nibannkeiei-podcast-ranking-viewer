@@ -127,7 +127,7 @@ function renderChart(data) {
 
   const labels = data.map(d => {
     const weekday = getWeekdayJP(d["日付"]);
-    return `${d["日付"]}（${weekday}）${d["時刻"].toString().padStart(2, '0')}:00`;
+    return `${d["日付"]}(${weekday})${d["時刻"].toString().padStart(2, '0')}:00`;
 });
   const values = data.map(d => d["ランキング"]);
 
