@@ -114,13 +114,21 @@ function renderTable(data) {
 }
 
 // グラフ描画（null対策あり）
+function getWeekdayJP(dateStr) {
+  const date = new Date(dateStr);
+  return ["日", "月", "火", "水", "木", "金", "土"][date.getDay()];
+}
+
 function renderChart(data) {
   const canvas = document.getElementById("chart");
   if (!canvas) return;
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
-  const labels = data.map(d => `${d["日付"]} ${d["時刻"].toString().padStart(2, '0')}:00`);
+  const labels = data.map(d => {
+    const weekday = getWeekdayJP(d["日付"]);
+    return `${d["日付"]}(${weekday})${d["時刻"].toString().padStart(2, '0')}:00`;
+});
   const values = data.map(d => d["ランキング"]);
 
   if (chart) chart.destroy();
