@@ -4,10 +4,13 @@ on:
   schedule:
 
     - cron: '10 0 * * *'   # JST 09:10 # 日本時間9:10,12:10,15:10,18:10,22:10（UTCで-9時間）
+    - cron: '10 2 * * *'   # JST 11:10
     - cron: '10 3 * * *'   # JST 12:10
     - cron: '10 6 * * *'   # JST 15:10
+    - cron: '10 7 * * *'   # JST 16:10
     - cron: '10 9 * * *'   # JST 18:10
     - cron: '10 13 * * *'  # JST 22:10
+    - cron: '10 18 * * *'  # JST 3:10
     - cron: '10 22 * * *'  # JST 7:10
   workflow_dispatch:
 
