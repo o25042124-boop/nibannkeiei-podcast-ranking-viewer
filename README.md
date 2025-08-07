@@ -24,10 +24,10 @@
 ```
 .
 ├── apple1/        # AppleビジネスカテゴリのJSONとWebビューア
-├── apple2/        # Apple総合カテゴリ
-├── apple3/        # Appleマネージメントカテゴリ
-├── spotify/       # Spotifyランキング
-├── amazon/        # Amazon Musicランキング
+├── apple2/        # Apple総合カテゴリのJSONとWebビューア
+├── apple3/        # AppleマネージメントカテゴリのJSONとWebビューア
+├── spotify/       # SpotifyランキングのJSONとWebビューア
+├── amazon/        # Amazon MusicランキングのJSONとWebビューア
 ├── excel/         # 各カテゴリのExcelデータ
 ├── .github/workflows/update.yml   # 自動更新ワークフロー
 ├── rank_log.py    # ランキング取得・保存スクリプト
