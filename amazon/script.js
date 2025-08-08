@@ -70,12 +70,21 @@ function renderCategoryChart(data) {
   const diameter = (chartContainer?.clientHeight) || 500;
 
   if (isSmallScreen) {
-    canvas.style.width = "100%";
-    canvas.style.height = "";
-  } else {
-    canvas.style.width = `${diameter}px`;
-    canvas.style.height = `${diameter}px`;
+  canvas.style.width = "100%";
+  canvas.style.height = "";  // 高さはChart.jsに任せる
+  if (legendEl) {
+    legendEl.style.maxHeight = "70vh";  // 高さだけ管理
+    // 幅はCSSのflexで管理
   }
+  } else {
+    canvas.style.width  = `${diameter}px`;
+    canvas.style.height = `${diameter}px`;
+    if (legendEl) {
+      legendEl.style.maxHeight = `${diameter}px`;
+      legendEl.style.width = "280px";
+    }
+  }
+
 
   // 区分集計
   generateRankingRanges(data);
