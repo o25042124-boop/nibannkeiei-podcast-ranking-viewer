@@ -79,32 +79,32 @@
 
     /* スマホでも右に1列（横並び）。幅はflexの割合で管理 */
     @media (max-width: 767px) {
-    #category-wrap {
-      align-items: flex-start;
-      gap: 8px;                /* ちょい狭め */
-      overflow-x: hidden;      /* 横はみ出し防止 */
-      width: 100%;
-    }
+      #category-wrap {
+        align-items: flex-start;
+        gap: 8px;                /* ちょい狭め */
+        overflow-x: hidden;      /* 横はみ出し防止 */
+        width: 100%;
+      }
 
-    /* 左：円グラフ 60% / 右：凡例 40%（gap分を考慮して割合で分割） */
-    #category-canvas-box {
-      flex: 0 0 60%;
-      max-width: 60%;
-    }
-    #category-legend {
-      flex: 1 1 40%;
-      max-width: 40%;
-      font-size: 12px;
-      max-height: 70vh;        /* 画面高の7割までスクロール */
-      overflow-y: auto;
-    }
+      /* 左：円グラフ 60% / 右：凡例 40%（gap分を考慮して割合で分割） */
+      #category-canvas-box {
+        flex: 0 0 60%;
+        max-width: 60%;
+      }
+      #category-legend {
+        flex: 1 1 40%;
+        max-width: 40%;
+        font-size: 12px;
+        max-height: 70vh;        /* 画面高の7割までスクロール */
+        overflow-y: auto;
+      }
 
-    /* キャンバスは親幅いっぱい使う */
-    #category-canvas-box canvas {
-      width: 100% !important;
-      height: auto !important;
+      /* キャンバスは親幅いっぱい使う */
+      #category-canvas-box canvas {
+        width: 100% !important;
+        height: auto !important;
+      }
     }
-  }
 
 
   </style>
