@@ -46,69 +46,7 @@
     .controls > * {
       margin-right: 10px;
     }
-
-    /* 円グラフ＋外側凡例のレイアウト */
-    #category-container {
-      width: 100%;
-      max-width: 1000px;
-      margin-top: 20px;
-    }
-    #category-wrap {
-      display: flex;
-      gap: 16px;
-      align-items: flex-start;   /* 左揃え */
-    }
-    /* キャンバスは左寄せのまま */
-    #category-canvas-box canvas {
-      display: block;
-      margin: 0;
-    }
-    /* 右側のHTML凡例（PCは固定幅・スクロール） */
-    #category-legend {
-      flex: 0 0 280px;           /* 右カラムの幅 */
-      max-height: 500px;         /* PC時は500pxぶんスクロール */
-      overflow: auto;
-      font-size: 14px;
-      line-height: 1.2;
-    }
-    #category-legend ul { list-style: none; margin: 0; padding: 0; }
-    #category-legend li { display: flex; align-items: center; margin: 4px 0; }
-    #category-legend .swatch {
-      width: 12px; height: 12px; margin-right: 8px; display: inline-block;
-    }
-
-    /* スマホでも右に1列（横並び）。幅はflexの割合で管理 */
-    @media (max-width: 767px) {
-      #category-wrap {
-        align-items: flex-start;
-        gap: 8px;                /* ちょい狭め */
-        overflow-x: hidden;      /* 横はみ出し防止 */
-        width: 100%;
-      }
-
-      /* 左：円グラフ 60% / 右：凡例 40%（gap分を考慮して割合で分割） */
-      #category-canvas-box {
-        flex: 0 0 60%;
-        max-width: 60%;
-      }
-      #category-legend {
-        flex: 1 1 40%;
-        max-width: 40%;
-        font-size: 12px;
-        max-height: 70vh;        /* 画面高の7割までスクロール */
-        overflow-y: auto;
-      }
-
-      /* キャンバスは親幅いっぱい使う */
-      #category-canvas-box canvas {
-        width: 100% !important;
-        height: auto !important;
-      }
-    }
-
-
   </style>
-
 </head>
 <body>
   <div style="text-align: right; margin-bottom: 10px;">
@@ -190,15 +128,9 @@
   </div>
 
   
-  <!-- ② ランキング区分ブロックを置き換え -->
-  <div id="category-container" style="display: none;">
+  <div id="category-container" style="display: none; margin-top: 20px;">
     <h3>ランキング区分</h3>
-    <div id="category-wrap">
-      <div id="category-canvas-box">
-        <canvas id="category-chart"></canvas>
-      </div>
-      <div id="category-legend"></div>
-    </div>
+    <canvas id="category-chart" width="400" height="400"></canvas>
   </div>
 
   <script src="script.js"></script>
