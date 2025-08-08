@@ -61,16 +61,17 @@ function renderCategoryChart(data) {
         legend: {
           position: "right",
           labels: {
-            // Show all segments with percentages in legend
             generateLabels: function(chart) {
               const defaultGen = Chart.defaults.plugins.legend.labels.generateLabels;
               const items = defaultGen(chart);
-              const dataArr = chart.data.datasets[0].data || [];
-              const total = dataArr.reduce((a, b) => a + b, 0) || 0;
-              return items.map((item) => {
-                const idx = item.index; // segment index
-                const pct = total ? ((dataArr[idx] / total) * 100).toFixed(1) + "%" : "0.0%";
-                return Object.assign({}, item, { text: `${chart.data.labels[idx]} (${pct})` });
+              const dataArr = (chart.data && chart.data.datasets && chart.data.datasets[0] && chart.data.datasets[0].data) ? chart.data.datasets[0].data : [];
+              const labelsArr = (chart.data && chart.data.labels) ? chart.data.labels : [];
+              const total = dataArr.reduce((a, b) => a + (Number(b) || 0), 0) || 0;
+              return items.map((item, i) => {
+                const labelText = labelsArr[i] ?? item.text ?? "";
+                const value = Number(dataArr[i]) || 0;
+                const pct = total ? ((value / total) * 100).toFixed(1) + "%" : "0.0%";
+                return Object.assign({}, item, { text: `${labelText} (${pct})` });
               });
             }
           }
