@@ -22,6 +22,26 @@ function getRankingCategory(rank) {
 }
 
 function renderCategoryChart(data) {
+  // ===== 画面サイズに応じてキャンバスの見た目サイズを調整 =====
+  const canvas = document.getElementById("category-chart");
+  if (!canvas) return;
+  const isSmallScreen = window.innerWidth < 768;
+
+  // 折れ線グラフのコンテナ(#chart-container)の高さを直径として使う（フォールバック500）
+  const chartContainer = document.getElementById("chart-container");
+  const diameter = (chartContainer?.clientHeight) || 500;
+
+  if (isSmallScreen) {
+    // スマホ: 幅いっぱい、高さはChart.jsに任せる
+    canvas.style.width = "100%";
+    canvas.style.height = "";
+  } else {
+    // PC: 左寄せの正方形（直径＝折れ線グラフの高さ）
+    canvas.style.width = `${diameter}px`;
+    canvas.style.height = `${diameter}px`;
+  }
+  // =======================================================
+
   // フィルタ済みデータから範囲を再生成
   generateRankingRanges(data);
 
@@ -42,12 +62,12 @@ function renderCategoryChart(data) {
   const labels = entries.map(e => e[0]);
   const counts = entries.map(e => e[1]);
 
-  const canvas = document.getElementById("category-chart");
-  if (!canvas) return;
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
   if (categoryChart) categoryChart.destroy();
+
+  const pieRadius = isSmallScreen ? '80%' : '65%'; // スマホ大きめ / PC少し小さめ
 
   categoryChart = new Chart(ctx, {
     type: "pie",
@@ -62,14 +82,14 @@ function renderCategoryChart(data) {
       }]
     },
     options: {
-      radius: '60%',
+      radius: pieRadius,
       layout: { padding: 16 },
       responsive: true,
       plugins: {
         legend: {
           position: "right",
           labels: {
-            // 各セグメントに対応する凡例を手動生成（%付き）
+            // 各セグメントに対応する凡例（%付き）
             generateLabels: function(chart) {
               const lbls = chart.data.labels || [];
               const ds = chart.data.datasets?.[0] || { data: [], backgroundColor: [] };
@@ -211,7 +231,7 @@ function renderTable(data) {
   }
 }
 
-// グラフ描画（null対策あり）
+// グラフ描画
 function getWeekdayJP(dateStr) {
   const date = new Date(dateStr);
   return ["日", "月", "火", "水", "木", "金", "土"][date.getDay()];
@@ -269,7 +289,7 @@ function renderChart(data) {
   });
 }
 
-// 「今日・今週・今月・今年」ボタンの処理を登録
+// 「今日・今週・今月・今年」クイックフィルタ
 function setupQuickFilters() {
   document.querySelectorAll(".quick-filter").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -285,8 +305,8 @@ function setupQuickFilters() {
           break;
         case "week":
           const day = today.getDay();
-          start.setDate(today.getDate() - day);       // 日曜始まり
-          end.setDate(today.getDate() + (6 - day));   // 土曜まで
+          start.setDate(today.getDate() - day);     // 日曜始まり
+          end.setDate(today.getDate() + (6 - day)); // 土曜まで
           break;
         case "month":
           start.setDate(1);
@@ -342,6 +362,11 @@ document.getElementById("btn-reset-filters").onclick = () => {
   renderTable(rawData);
   renderCategoryChart(rawData);
 };
+
+// ウィンドウサイズ変更で再レイアウト
+window.addEventListener('resize', () => {
+  renderCategoryChart(currentFilteredData || rawData);
+});
 
 // 更新日時表示
 function updateTimestamp() {

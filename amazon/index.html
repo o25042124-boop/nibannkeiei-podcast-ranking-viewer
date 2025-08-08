@@ -46,7 +46,20 @@
     .controls > * {
       margin-right: 10px;
     }
+
+    #category-container {
+      width: 100%;
+      max-width: 1000px;
+      height: 500px;       /* ← 折れ線グラフと同じ高さ */
+      margin-top: 20px;
+    }
+    #category-chart {      /* 念のため左寄せを強める */
+      display: block;
+      margin: 0;          /* 中央寄せ回避 */
+    }
+
   </style>
+
 </head>
 <body>
   <div style="text-align: right; margin-bottom: 10px;">
