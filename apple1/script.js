@@ -3,6 +3,54 @@ let currentFilteredData = null;
 let categoryChart;
 let rankingRanges = [];
 let chart;
+
+// --- Pie inside label plugin ---
+const insideLabelPlugin = {
+  id: 'insideLabel',
+  afterDraw(chart, args, pluginOptions) {
+    const dataset = chart.data?.datasets?.[0];
+    if (!dataset) return;
+    const dataArr = Array.isArray(dataset.data) ? dataset.data : [];
+    const labelsArr = chart.data.labels || [];
+    const meta = chart.getDatasetMeta(0);
+    const total = dataArr.reduce((a,b)=> a + (Number(b)||0), 0);
+
+    const ctx = chart.ctx;
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const baseFont = Chart.defaults.font;
+    const fontSize = (pluginOptions && pluginOptions.fontSize) || baseFont.size;
+    ctx.font = `${fontSize}px ${baseFont.family}`;
+
+    dataArr.forEach((val, i) => {
+      if (!val) return;
+      const arc = meta.data?.[i];
+      if (!arc) return;
+      // get current props
+      const { x, y, startAngle, endAngle, innerRadius, outerRadius } =
+        arc.getProps(['x','y','startAngle','endAngle','innerRadius','outerRadius'], true);
+      const angle = (startAngle + endAngle) / 2;
+      const r = (innerRadius + outerRadius) / 2;
+      const tx = x + Math.cos(angle) * r;
+      const ty = y + Math.sin(angle) * r;
+
+      const pct = total ? ((val / total) * 100).toFixed(1) + '%' : '0.0%';
+      const text = `${labelsArr[i] || ''} (${pct})`;
+
+      // outline for contrast
+      ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+      ctx.lineWidth = 3;
+      ctx.strokeText(text, tx, ty);
+      // fill
+      ctx.fillStyle = 'white';
+      ctx.fillText(text, tx, ty);
+    });
+
+    ctx.restore();
+  }
+};
+
 function generateRankingRanges(data) {
   const maxRank = Math.max(...data.map(d => d["ランキング"]));
   rankingRanges = [];
@@ -45,6 +93,7 @@ function renderCategoryChart(data) {
   if (!ctx) return;
 
   if (categoryChart) categoryChart.destroy();
+  Chart.register(insideLabelPlugin);
   categoryChart = new Chart(ctx, {
     type: "pie",
     data: {
@@ -56,22 +105,33 @@ function renderCategoryChart(data) {
       }]
     },
     options: {
+      radius: '80%',
+      layout: { padding: 16 },
       responsive: true,
       plugins: {
         legend: {
           position: "right",
           labels: {
             generateLabels: function(chart) {
-              const defaultGen = Chart.defaults.plugins.legend.labels.generateLabels;
-              const items = defaultGen(chart);
-              const dataArr = (chart.data && chart.data.datasets && chart.data.datasets[0] && chart.data.datasets[0].data) ? chart.data.datasets[0].data : [];
-              const labelsArr = (chart.data && chart.data.labels) ? chart.data.labels : [];
+              const labels = chart.data.labels || [];
+              const dataset = (chart.data.datasets && chart.data.datasets[0]) ? chart.data.datasets[0] : { data: [], backgroundColor: [] };
+              const dataArr = Array.isArray(dataset.data) ? dataset.data : [];
+              const bgArr = Array.isArray(dataset.backgroundColor) ? dataset.backgroundColor : [];
+              const meta = chart.getDatasetMeta(0);
               const total = dataArr.reduce((a, b) => a + (Number(b) || 0), 0) || 0;
-              return items.map((item, i) => {
-                const labelText = labelsArr[i] ?? item.text ?? "";
+
+              // Build one legend item per arc (label)
+              return labels.map((lbl, i) => {
                 const value = Number(dataArr[i]) || 0;
                 const pct = total ? ((value / total) * 100).toFixed(1) + "%" : "0.0%";
-                return Object.assign({}, item, { text: `${labelText} (${pct})` });
+                return {
+                  text: `${lbl} (${pct})`,
+                  fillStyle: bgArr[i] ?? '#999',
+                  strokeStyle: bgArr[i] ?? '#999',
+                  lineWidth: 1,
+                  hidden: meta.data?.[i]?.hidden ?? false,
+                  index: i
+                };
               });
             }
           }
