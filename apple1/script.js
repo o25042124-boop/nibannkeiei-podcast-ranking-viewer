@@ -1,15 +1,71 @@
 let rawData = [];
+let currentFilteredData = null;
+let categoryChart;
 let chart;
+let rankingRanges = []; // 区分リスト
+
+function generateRankingRanges(data) {
+  const maxRank = Math.max(...data.map(d => d["ランキング"]));
+  rankingRanges = [];
+  for (let start = 1; start <= maxRank; start += 10) {
+    const end = Math.min(start + 9, maxRank);
+    rankingRanges.push(`${start}-${end}`);
+  }
+}
+
+
+function renderCategoryChart(data) {
+  generateRankingRanges(data);
+  const categoryCount = {};
+  data.forEach(item => {
+    const category = getRankingCategory(item["ランキング"]);
+    categoryCount[category] = (categoryCount[category] || 0) + 1;
+  });
+  const labels = rankingRanges;
+  const counts = rankingRanges.map(range => categoryCount[range] || 0);
+  const ctx = document.getElementById("category-chart").getContext("2d");
+  if (categoryChart) categoryChart.destroy();
+  categoryChart = new Chart(ctx, {
+    type: "pie",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "件数",
+        data: counts,
+        backgroundColor: labels.map((_, i) =>
+          `hsl(${(i * 360 / labels.length)}, 70%, 60%)`
+        )
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: "right" }
+      }
+    }
+  });
+}
+
+function getRankingCategory(rank) {
+  for (const range of rankingRanges) {
+    const [min, max] = range.split("-").map(Number);
+    if (rank >= min && rank <= max) return range;
+  }
+  return "";
+}
+
 
 // データ取得と初期表示
 async function fetchData() {
   try {
     const response = await fetch("apple1.json");
     rawData = await response.json();
+    generateRankingRanges(rawData);
     populateDateOptions(rawData);
     renderChart(rawData);
     renderTable(rawData);
     updateTimestamp();
+    currentFilteredData = rawData;
     setupQuickFilters();  // ← ここでボタンイベント登録
   } catch (error) {
     document.getElementById("chart").innerHTML = `<p style="color:red;">データ読み込みエラー: ${error}</p>`;
@@ -85,7 +141,9 @@ function applyFilters() {
     return matchYear && matchMonth && matchStart && matchEnd && matchWeekday;
   });
 
-  renderChart(filtered);
+  currentFilteredData = filtered;
+  currentFilteredData = filtered;
+      renderChart(filtered);
   renderTable(filtered);
 }
 
@@ -108,6 +166,7 @@ function renderTable(data) {
       <td>${item["曜日"]}</td>
       <td>${item["時刻"].toString().padStart(2, '0')}:00</td>
       <td>${item["ランキング"]}</td>
+      <td>${getRankingCategory(item["ランキング"])}</td>
     `;
     tableBody.appendChild(row);
   }
@@ -206,6 +265,8 @@ function setupQuickFilters() {
         return dDate >= start && dDate <= end;
       });
 
+      currentFilteredData = filtered;
+  currentFilteredData = filtered;
       renderChart(filtered);
       renderTable(filtered);
     });
@@ -213,6 +274,14 @@ function setupQuickFilters() {
 }
 
 // 表とグラフの切り替え
+
+document.getElementById("btn-show-category").onclick = () => {
+  document.getElementById("chart-container").style.display = "none";
+  document.getElementById("table-container").style.display = "none";
+  document.getElementById("category-container").style.display = "block";
+  renderCategoryChart(currentFilteredData || rawData);
+};
+
 document.getElementById("btn-show-chart").onclick = () => {
   document.getElementById("chart-container").style.display = "block";
   document.getElementById("table-container").style.display = "none";
