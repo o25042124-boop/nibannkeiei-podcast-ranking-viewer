@@ -363,10 +363,6 @@ document.getElementById("btn-reset-filters").onclick = () => {
   renderCategoryChart(rawData);
 };
 
-// ウィンドウサイズ変更で再レイアウト
-window.addEventListener('resize', () => {
-  renderCategoryChart(currentFilteredData || rawData);
-});
 
 // 更新日時表示
 function updateTimestamp() {
