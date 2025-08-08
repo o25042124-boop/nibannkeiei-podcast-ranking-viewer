@@ -62,7 +62,7 @@ function renderCategoryChart(data) {
       }]
     },
     options: {
-      radius: '80%',
+      radius: '60%',
       layout: { padding: 16 },
       responsive: true,
       plugins: {
