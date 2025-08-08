@@ -21,17 +21,12 @@ function getRankingCategory(rank) {
 }
 
 function renderCategoryChart(data) {
-  // Recalculate ranges from filtered data
   generateRankingRanges(data);
-
-  // Count by category
   const categoryCount = {};
   data.forEach(item => {
     const cat = getRankingCategory(item["ランキング"]);
     categoryCount[cat] = (categoryCount[cat] || 0) + 1;
   });
-
-  // Keep original ascending order from rankingRanges, but drop 0-count bins
   const entries = rankingRanges
     .map(r => [r, categoryCount[r] || 0])
     .filter(([label, count]) => count > 0);
@@ -58,7 +53,21 @@ function renderCategoryChart(data) {
     options: {
       responsive: true,
       plugins: {
-        legend: { position: "right" },
+        legend: {
+          position: "right",
+          labels: {
+            generateLabels: function(chart) {
+              const defaultGen = Chart.defaults.plugins.legend.labels.generateLabels;
+              const items = defaultGen(chart);
+              const data = chart.data.datasets[0].data || [];
+              const total = data.reduce((a, b) => a + b, 0) || 0;
+              return items.map((item, i) => {
+                const pct = total ? ((data[i] / total) * 100).toFixed(1) + "%" : "0.0%";
+                return Object.assign({}, item, { text: `${chart.data.labels[i]} (${pct})` });
+              });
+            }
+          }
+        },
         tooltip: {
           callbacks: {
             label: function(context) {
@@ -80,10 +89,10 @@ async function fetchData() {
   try {
     const response = await fetch("apple1.json");
     rawData = await response.json();
-    generateRankingRanges(rawData);
     populateDateOptions(rawData);
     renderChart(rawData);
     renderTable(rawData);
+    renderCategoryChart(rawData);
     updateTimestamp();
     currentFilteredData = rawData;
     setupQuickFilters();  // ← ここでボタンイベント登録
@@ -161,10 +170,9 @@ function applyFilters() {
     return matchYear && matchMonth && matchStart && matchEnd && matchWeekday;
   });
 
-  currentFilteredData = filtered;
-  currentFilteredData = filtered;
-      renderChart(filtered);
+  renderChart(filtered);
   renderTable(filtered);
+  renderCategoryChart(filtered);
 }
 
 
@@ -284,23 +292,20 @@ function setupQuickFilters() {
         return dDate >= start && dDate <= end;
       });
 
-      currentFilteredData = filtered;
-  currentFilteredData = filtered;
       renderChart(filtered);
       renderTable(filtered);
+      renderCategoryChart(filtered);
     });
   });
 }
 
 // 表とグラフの切り替え
-
 document.getElementById("btn-show-category").onclick = () => {
   document.getElementById("chart-container").style.display = "none";
   document.getElementById("table-container").style.display = "none";
   document.getElementById("category-container").style.display = "block";
   renderCategoryChart(currentFilteredData || rawData);
 };
-
 document.getElementById("btn-show-chart").onclick = () => {
   document.getElementById("chart-container").style.display = "block";
   document.getElementById("table-container").style.display = "none";
@@ -317,9 +322,9 @@ document.getElementById("btn-apply-filters").onclick = applyFilters;
 document.getElementById("btn-reset-filters").onclick = () => {
   ["filter-year", "filter-month", "filter-start-date", "filter-end-date", "filter-weekday"]
     .forEach(id => document.getElementById(id).value = "");
-  currentFilteredData = rawData;
   renderChart(rawData);
   renderTable(rawData);
+  renderCategoryChart(rawData);
 };
 
 // 更新日時表示
