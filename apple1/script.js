@@ -1,15 +1,91 @@
 let rawData = [];
+let currentFilteredData = null;
+let categoryChart;
+let rankingRanges = [];
 let chart;
+function generateRankingRanges(data) {
+  const maxRank = Math.max(...data.map(d => d["ランキング"]));
+  rankingRanges = [];
+  for (let start = 1; start <= maxRank; start += 10) {
+    const end = Math.min(start + 9, maxRank);
+    rankingRanges.push(`${start}-${end}位`);
+  }
+}
+
+function getRankingCategory(rank) {
+  for (const range of rankingRanges) {
+    const [min, max] = range.replace("位", "").split("-").map(Number);
+    if (rank >= min && rank <= max) return range;
+  }
+  return "";
+}
+
+function renderCategoryChart(data) {
+  // Recalculate ranges from filtered data
+  generateRankingRanges(data);
+
+  // Count by category
+  const categoryCount = {};
+  data.forEach(item => {
+    const cat = getRankingCategory(item["ランキング"]);
+    categoryCount[cat] = (categoryCount[cat] || 0) + 1;
+  });
+
+  // Keep original ascending order from rankingRanges, but drop 0-count bins
+  const entries = rankingRanges
+    .map(r => [r, categoryCount[r] || 0])
+    .filter(([label, count]) => count > 0);
+
+  const labels = entries.map(e => e[0]);
+  const counts = entries.map(e => e[1]);
+
+  const canvas = document.getElementById("category-chart");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  if (categoryChart) categoryChart.destroy();
+  categoryChart = new Chart(ctx, {
+    type: "pie",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "件数",
+        data: counts,
+        backgroundColor: labels.map((_, i) => `hsl(${(i * 360 / Math.max(labels.length,1))}, 70%, 60%)`)
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: "right" },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+              const value = context.raw;
+              const percentage = total ? ((value / total) * 100).toFixed(1) + "%" : "0.0%";
+              return `${context.label}: ${value}件 (${percentage})`;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
 
 // データ取得と初期表示
 async function fetchData() {
   try {
     const response = await fetch("apple1.json");
     rawData = await response.json();
+    generateRankingRanges(rawData);
     populateDateOptions(rawData);
     renderChart(rawData);
     renderTable(rawData);
     updateTimestamp();
+    currentFilteredData = rawData;
     setupQuickFilters();  // ← ここでボタンイベント登録
   } catch (error) {
     document.getElementById("chart").innerHTML = `<p style="color:red;">データ読み込みエラー: ${error}</p>`;
@@ -85,7 +161,9 @@ function applyFilters() {
     return matchYear && matchMonth && matchStart && matchEnd && matchWeekday;
   });
 
-  renderChart(filtered);
+  currentFilteredData = filtered;
+  currentFilteredData = filtered;
+      renderChart(filtered);
   renderTable(filtered);
 }
 
@@ -206,6 +284,8 @@ function setupQuickFilters() {
         return dDate >= start && dDate <= end;
       });
 
+      currentFilteredData = filtered;
+  currentFilteredData = filtered;
       renderChart(filtered);
       renderTable(filtered);
     });
@@ -213,6 +293,14 @@ function setupQuickFilters() {
 }
 
 // 表とグラフの切り替え
+
+document.getElementById("btn-show-category").onclick = () => {
+  document.getElementById("chart-container").style.display = "none";
+  document.getElementById("table-container").style.display = "none";
+  document.getElementById("category-container").style.display = "block";
+  renderCategoryChart(currentFilteredData || rawData);
+};
+
 document.getElementById("btn-show-chart").onclick = () => {
   document.getElementById("chart-container").style.display = "block";
   document.getElementById("table-container").style.display = "none";
@@ -229,6 +317,7 @@ document.getElementById("btn-apply-filters").onclick = applyFilters;
 document.getElementById("btn-reset-filters").onclick = () => {
   ["filter-year", "filter-month", "filter-start-date", "filter-end-date", "filter-weekday"]
     .forEach(id => document.getElementById(id).value = "");
+  currentFilteredData = rawData;
   renderChart(rawData);
   renderTable(rawData);
 };
