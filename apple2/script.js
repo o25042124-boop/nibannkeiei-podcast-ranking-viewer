@@ -1,16 +1,124 @@
 let rawData = [];
-let chart; // Chart.js グラフ保持用
+let currentFilteredData = null;
+let categoryChart;
+let rankingRanges = [];
+let chart;
+
+function generateRankingRanges(data) {
+  const maxRank = Math.max(...data.map(d => d["ランキング"]));
+  rankingRanges = [];
+  for (let start = 1; start <= maxRank; start += 10) {
+    const end = Math.min(start + 9, maxRank);
+    rankingRanges.push(`${start}-${end}位`);
+  }
+}
+
+function getRankingCategory(rank) {
+  for (const range of rankingRanges) {
+    const [min, max] = range.replace("位", "").split("-").map(Number);
+    if (rank >= min && rank <= max) return range;
+  }
+  return "";
+}
+
+function renderCategoryChart(data) {
+  // フィルタ済みデータから範囲を再生成
+  generateRankingRanges(data);
+
+  // 区分ごとに件数集計（ランキングが不正な行は除外）
+  const categoryCount = {};
+  data.forEach(item => {
+    const r = item["ランキング"];
+    if (r == null || isNaN(r)) return;
+    const cat = getRankingCategory(r) || "不明";
+    categoryCount[cat] = (categoryCount[cat] || 0) + 1;
+  });
+
+  // 0件は除外、昇順（1-10位→…）で並べる
+  const entries = rankingRanges
+    .map(r => [r, categoryCount[r] || 0])
+    .filter(([, count]) => count > 0);
+
+  const labels = entries.map(e => e[0]);
+  const counts = entries.map(e => e[1]);
+
+  const canvas = document.getElementById("category-chart");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  if (categoryChart) categoryChart.destroy();
+
+  categoryChart = new Chart(ctx, {
+    type: "pie",
+    data: {
+      labels,
+      datasets: [{
+        label: "件数",
+        data: counts,
+        backgroundColor: labels.map((_, i) =>
+          `hsl(${(i * 360 / Math.max(labels.length, 1))}, 70%, 60%)`
+        )
+      }]
+    },
+    options: {
+      radius: '80%',
+      layout: { padding: 16 },
+      responsive: true,
+      plugins: {
+        legend: {
+          position: "right",
+          labels: {
+            // 各セグメントに対応する凡例を手動生成（%付き）
+            generateLabels: function(chart) {
+              const lbls = chart.data.labels || [];
+              const ds = chart.data.datasets?.[0] || { data: [], backgroundColor: [] };
+              const dataArr = Array.isArray(ds.data) ? ds.data : [];
+              const colors = Array.isArray(ds.backgroundColor) ? ds.backgroundColor : [];
+              const total = dataArr.reduce((a, b) => a + (Number(b) || 0), 0) || 0;
+
+              return lbls.map((lbl, i) => {
+                const v = Number(dataArr[i]) || 0;
+                const pct = total ? ((v / total) * 100).toFixed(1) + "%" : "0.0%";
+                return {
+                  text: `${lbl} (${pct})`,
+                  fillStyle: colors[i] ?? '#999',
+                  strokeStyle: colors[i] ?? '#999',
+                  lineWidth: 1,
+                  index: i
+                };
+              });
+            }
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const total = context.dataset.data.reduce((a, b) => a + (Number(b) || 0), 0);
+              const value = Number(context.raw) || 0;
+              const percentage = total ? ((value / total) * 100).toFixed(1) + "%" : "0.0%";
+              return `${context.label}: ${value}件 (${percentage})`;
+            }
+          }
+        }
+      }
+    }
+  });
+}
 
 // データ取得と初期表示
 async function fetchData() {
   try {
     const response = await fetch("apple2.json");
     rawData = await response.json();
+    generateRankingRanges(rawData);
     populateDateOptions(rawData);
     renderChart(rawData);
     renderTable(rawData);
+    renderCategoryChart(rawData);
     updateTimestamp();
-    setupQuickFilters();  // ← ここでボタンイベント登録
+    currentFilteredData = rawData;
+    setupQuickFilters();
   } catch (error) {
     document.getElementById("chart").innerHTML = `<p style="color:red;">データ読み込みエラー: ${error}</p>`;
   }
@@ -58,37 +166,27 @@ function applyFilters() {
 
   // 文字列のまま変換（YYYY/MM/DD）
   const startStr = startDate
-    ? new Date(startDate).toLocaleDateString("ja-JP", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit"
-      }).replace(/\//g, "/")
+    ? new Date(startDate).toLocaleDateString("ja-JP", { year: "numeric", month: "2-digit", day: "2-digit" }).replace(/\//g, "/")
     : "";
-
   const endStr = endDate
-    ? new Date(endDate).toLocaleDateString("ja-JP", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit"
-      }).replace(/\//g, "/")
+    ? new Date(endDate).toLocaleDateString("ja-JP", { year: "numeric", month: "2-digit", day: "2-digit" }).replace(/\//g, "/")
     : "";
 
   const filtered = rawData.filter(d => {
     const dDateStr = d["日付"];
-
     const matchYear = !year || dDateStr.startsWith(year);
     const matchMonth = !month || dDateStr.slice(5, 7) === month;
     const matchStart = !startStr || dDateStr >= startStr;
     const matchEnd = !endStr || dDateStr <= endStr;
     const matchWeekday = !weekday || d["曜日"] === weekday;
-
     return matchYear && matchMonth && matchStart && matchEnd && matchWeekday;
   });
 
+  currentFilteredData = filtered;
   renderChart(filtered);
   renderTable(filtered);
+  renderCategoryChart(filtered);
 }
-
 
 // 表描画
 function renderTable(data) {
@@ -128,7 +226,7 @@ function renderChart(data) {
   const labels = data.map(d => {
     const weekday = getWeekdayJP(d["日付"]);
     return `${d["日付"]}(${weekday})${d["時刻"].toString().padStart(2, '0')}:00`;
-});
+  });
   const values = data.map(d => d["ランキング"]);
 
   if (chart) chart.destroy();
@@ -136,7 +234,7 @@ function renderChart(data) {
   chart = new Chart(ctx, {
     type: "line",
     data: {
-      labels: labels,
+      labels,
       datasets: [{
         label: "ランキング",
         data: values,
@@ -184,7 +282,6 @@ function setupQuickFilters() {
 
       switch (range) {
         case "today":
-          // そのまま
           break;
         case "week":
           const day = today.getDay();
@@ -206,21 +303,32 @@ function setupQuickFilters() {
         return dDate >= start && dDate <= end;
       });
 
+      currentFilteredData = filtered;
       renderChart(filtered);
       renderTable(filtered);
+      renderCategoryChart(filtered);
     });
   });
 }
 
-// 表とグラフの切り替え
+// ビュー切り替え
 document.getElementById("btn-show-chart").onclick = () => {
   document.getElementById("chart-container").style.display = "block";
   document.getElementById("table-container").style.display = "none";
+  document.getElementById("category-container").style.display = "none";
 };
 
 document.getElementById("btn-show-table").onclick = () => {
   document.getElementById("chart-container").style.display = "none";
   document.getElementById("table-container").style.display = "block";
+  document.getElementById("category-container").style.display = "none";
+};
+
+document.getElementById("btn-show-category").onclick = () => {
+  document.getElementById("chart-container").style.display = "none";
+  document.getElementById("table-container").style.display = "none";
+  document.getElementById("category-container").style.display = "block";
+  renderCategoryChart(currentFilteredData || rawData);
 };
 
 // 絞り込み・リセットボタン
@@ -229,8 +337,10 @@ document.getElementById("btn-apply-filters").onclick = applyFilters;
 document.getElementById("btn-reset-filters").onclick = () => {
   ["filter-year", "filter-month", "filter-start-date", "filter-end-date", "filter-weekday"]
     .forEach(id => document.getElementById(id).value = "");
+  currentFilteredData = rawData;
   renderChart(rawData);
   renderTable(rawData);
+  renderCategoryChart(rawData);
 };
 
 // 更新日時表示
