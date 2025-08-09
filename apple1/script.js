@@ -4,6 +4,40 @@ let categoryChart;
 let rankingRanges = [];
 let chart;
 
+// HTML凡例プラグイン（Chart更新のたびにHTML側を再生成）
+const htmlLegendPlugin = {
+  id: 'htmlLegend',
+  afterUpdate(chart, args, options) {
+    const container = document.getElementById(options.containerID);
+    if (!container) return;
+    while (container.firstChild) container.firstChild.remove();
+
+    const labels = chart.data.labels || [];
+    const ds = chart.data.datasets?.[0] || { data: [], backgroundColor: [] };
+    const dataArr = Array.isArray(ds.data) ? ds.data : [];
+    const colors = Array.isArray(ds.backgroundColor) ? ds.backgroundColor : [];
+    const total = dataArr.reduce((a, b) => a + (Number(b) || 0), 0) || 0;
+
+    labels.forEach((lbl, i) => {
+      const value = Number(dataArr[i]) || 0;
+      const pct = total ? ((value / total) * 100).toFixed(1) + "%" : "0.0%";
+
+      const item = document.createElement('div');
+      item.className = 'item';
+      const sw = document.createElement('span');
+      sw.className = 'swatch';
+      sw.style.backgroundColor = colors[i] ?? '#999';
+      const text = document.createElement('span');
+      text.textContent = `${lbl} (${pct})`;
+
+      item.appendChild(sw);
+      item.appendChild(text);
+      container.appendChild(item);
+    });
+  }
+};
+
+
 function generateRankingRanges(data) {
   const maxRank = Math.max(...data.map(d => d["ランキング"]));
   rankingRanges = [];
@@ -48,7 +82,8 @@ function renderCategoryChart(data) {
   if (!ctx) return;
 
   if (categoryChart) categoryChart.destroy();
-
+  Chart.register(htmlLegendPlugin);
+  Chart.register(htmlLegendPlugin);
   categoryChart = new Chart(ctx, {
     type: "pie",
     data: {
@@ -62,11 +97,25 @@ function renderCategoryChart(data) {
       }]
     },
     options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      radius: "80%",
+      layout: { padding: 16 },
+      
+      responsive: true,
+      maintainAspectRatio: false,
+      radius: "80%",
+      layout: { padding: 16 },
+      
       radius: '80%',
       layout: { padding: 16 },
       responsive: true,
       plugins: {
-        legend: {
+        legend: { display: false },
+        htmlLegend: { containerID: 'category-legend' },
+        tooltip: { display: false },
+        htmlLegend: { containerID: 'category-legend' },
+        tooltip: {
           position: "right",
           labels: {
             // 各セグメントに対応する凡例を手動生成（%付き）
@@ -263,7 +312,11 @@ function renderChart(data) {
         }
       },
       plugins: {
-        legend: { display: false }
+        legend: { display: false },
+        htmlLegend: { containerID: 'category-legend' },
+        tooltip: { display: false },
+        htmlLegend: { containerID: 'category-legend' },
+        tooltip: { display: false }
       }
     }
   });

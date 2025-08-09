@@ -46,6 +46,91 @@
     .controls > * {
       margin-right: 10px;
     }
+  
+    /* === Unified pie layout (PC & Mobile): pie on top (left-aligned), vertical legend below === */
+    #category-container {
+      width: 100%;
+      max-width: 1000px;
+      margin-top: 20px;
+    }
+    #category-chart-wrap {
+      width: 100%;
+      max-width: 600px;
+      aspect-ratio: 1 / 1;
+    }
+    #category-chart {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    #category-legend {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      margin-top: 10px;
+      max-height: 320px;
+      overflow-y: auto;
+      padding-right: 6px;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+    #category-legend .item {
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+    }
+    #category-legend .swatch {
+      width: 12px; height: 12px; border-radius: 2px; margin-right: 6px;
+      border: 1px solid rgba(0,0,0,0.15);
+    }
+    @media (min-width: 1024px) {
+      #category-chart-wrap { max-width: 600px; }
+    }
+
+  
+    /* === Category (pie) area ONLY === */
+    #category-flex {
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+      gap: 12px;
+      width: 100%;
+      max-width: 1000px;
+      overflow: visible;
+    }
+    #pie-wrap {
+      flex: 1 1 50%;
+      max-width: 50%;
+      aspect-ratio: 1 / 1;
+    }
+    #category-chart { width: 100%; height: 100%; display: block; }
+    #category-legend {
+      flex: 1 1 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      max-height: 100%;
+      overflow-y: auto;
+      padding-right: 6px;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      min-width: 0;
+    }
+    #category-legend .item { display: flex; align-items: center; white-space: nowrap; flex: 0 0 auto; }
+    #category-legend .swatch {
+      width: 12px; height: 12px; border-radius: 2px; margin-right: 6px;
+      border: 1px solid rgba(0,0,0,0.15);
+    }
+    @media (min-width: 1024px) {
+      #pie-wrap {
+        flex: 0 0 500px;
+        width: 500px; height: 500px; aspect-ratio: auto;
+      }
+      #category-legend { flex: 1 1 auto; max-height: 500px; }
+    }
+
   </style>
 </head>
 <body>
@@ -54,7 +139,7 @@
 
   </div>
 
-  <h1>ApplePodcast 「マネージメント」カテゴリーランキング遷移</h1>
+  <h1>Apple Podcast「マネージメント」カテゴリーランキング遷移</h1>
   <p id="last-updated" style="color: gray;">最終更新日時: 取得中...</p>
 
   <!-- 操作ボタン -->
@@ -129,10 +214,13 @@
 
   
   <div id="category-container" style="display: none; margin-top: 20px;">
-    <h3>ランキング区分</h3>
-    <canvas id="category-chart" width="400" height="400"></canvas>
+    <div id="category-flex">
+      <div id="pie-wrap">
+        <canvas id="category-chart"></canvas>
+      </div>
+      <div id="category-legend"></div>
+    </div>
   </div>
-
   <script src="script.js"></script>
 </body>
 </html>
