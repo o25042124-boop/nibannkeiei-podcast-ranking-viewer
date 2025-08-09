@@ -100,38 +100,13 @@ function renderCategoryChart(data) {
       maintainAspectRatio: false,
       radius: "80%",
       layout: { padding: 16 },
-      
-      radius: '80%',
-      layout: { padding: 16 },
       responsive: true,
+      maintainAspectRatio: false,
+      radius: "80%",
+      layout: { padding: 16 },
       plugins: {
         legend: { display: false },
         htmlLegend: { containerID: 'category-legend' },
-        tooltip: {
-          position: "right",
-          labels: {
-            // 各セグメントに対応する凡例を手動生成（%付き）
-            generateLabels: function(chart) {
-              const lbls = chart.data.labels || [];
-              const ds = chart.data.datasets?.[0] || { data: [], backgroundColor: [] };
-              const dataArr = Array.isArray(ds.data) ? ds.data : [];
-              const colors = Array.isArray(ds.backgroundColor) ? ds.backgroundColor : [];
-              const total = dataArr.reduce((a, b) => a + (Number(b) || 0), 0) || 0;
-
-              return lbls.map((lbl, i) => {
-                const v = Number(dataArr[i]) || 0;
-                const pct = total ? ((v / total) * 100).toFixed(1) + "%" : "0.0%";
-                return {
-                  text: `${lbl} (${pct})`,
-                  fillStyle: colors[i] ?? '#999',
-                  strokeStyle: colors[i] ?? '#999',
-                  lineWidth: 1,
-                  index: i
-                };
-              });
-            }
-          }
-        },
         tooltip: {
           callbacks: {
             label: function(context) {
@@ -142,7 +117,7 @@ function renderCategoryChart(data) {
             }
           }
         }
-      }
+      }}
     }
   });
 }
