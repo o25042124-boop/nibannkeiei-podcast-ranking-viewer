@@ -47,33 +47,23 @@
       margin-right: 10px;
     }
   
-    /* === Pie (left) + Legend (right) layout === */
-    #category-flex {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      flex-wrap: nowrap;
-      gap: 12px;
+    /* === HTML legend & fixed size for category pie === */
+    #category-container {
       width: 100%;
       max-width: 1000px;
-    }
-    /* Mobile-first: half-half layout */
-    #category-chart {
-      flex: 1 1 50%;
-      max-width: 50%;
-      height: auto;
+      height: 500px;
+      margin-top: 20px;
     }
     #category-legend {
-      flex: 1 1 50%;
+      margin-top: 8px;
+      max-width: 1000px;
+      max-height: 140px;
+      overflow: auto;
       display: flex;
-      flex-direction: row;
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      gap: 12px;
-      padding-top: 8px;
+      flex-wrap: wrap;
+      gap: 8px 12px;
       font-size: 0.9rem;
       line-height: 1.4;
-      white-space: nowrap;
     }
     #category-legend .item {
       display: inline-flex;
@@ -84,18 +74,10 @@
       width: 12px; height: 12px; border-radius: 2px; margin-right: 6px;
       border: 1px solid rgba(0,0,0,0.15);
     }
-    /* Desktop: fix pie diameter to 500px and pin left */
-    @media (min-width: 1024px) {
-      #category-chart {
-        flex: 0 0 500px;
-        width: 500px;
-        height: 500px;
-      }
-      #category-legend {
-        flex: 1 1 auto;
-      }
+    @media (max-width: 480px) {
+      #category-legend { max-height: 180px; font-size: 0.85rem; }
     }
-
+    
   </style>
 </head>
 <body>
@@ -104,7 +86,7 @@
 
   </div>
 
-  <h1>Amazon Music 総合ランキング遷移</h1>
+  <h1>ApplePodcast 「ビジネス」カテゴリーランキング遷移</h1>
   <p id="last-updated" style="color: gray;">最終更新日時: 取得中...</p>
 
   <!-- 操作ボタン -->
@@ -180,11 +162,10 @@
   
   <div id="category-container" style="display: none; margin-top: 20px;">
     <h3>ランキング区分</h3>
-    <div id="category-flex">
-      <canvas id="category-chart"></canvas>
-      <div id="category-legend"></div>
-    </div>
+    <canvas id="category-chart"></canvas>
+    <div id="category-legend"></div>
   </div>
+
   <script src="script.js"></script>
 </body>
 </html>
