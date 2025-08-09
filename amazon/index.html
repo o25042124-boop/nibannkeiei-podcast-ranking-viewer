@@ -63,20 +63,22 @@
       max-width: 50%;
       height: auto;
     }
+ 
     #category-legend {
-      flex: 1 1 50%;
       display: flex;
-      flex-direction: row;
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      gap: 12px;
+      flex-direction: column;       /* ★縦方向に並べる */
+      align-items: flex-start;
+      gap: 8px;
+      overflow-y: auto;             /* スクロール可（必要に応じて） */
+      max-height: 500px;            /* PCの円グラフに高さ合わせ */
       padding-top: 8px;
       font-size: 0.9rem;
       line-height: 1.4;
-      white-space: nowrap;
     }
+
+
     #category-legend .item {
-      display: inline-flex;
+      display: flex;
       align-items: center;
       white-space: nowrap;
     }
@@ -87,9 +89,9 @@
     /* Desktop: fix pie diameter to 500px and pin left */
     @media (min-width: 1024px) {
       #category-chart {
-        flex: 0 0 500px;
-        width: 500px;
-        height: 500px;
+        flex: 0 0 600px;
+        width: 600px;
+        height: 600px;
       }
       #category-legend {
         flex: 1 1 auto;
@@ -179,7 +181,6 @@
 
   
   <div id="category-container" style="display: none; margin-top: 20px;">
-    <h3>ランキング区分</h3>
     <div id="category-flex">
       <canvas id="category-chart"></canvas>
       <div id="category-legend"></div>
