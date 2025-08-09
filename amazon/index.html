@@ -47,36 +47,34 @@
       margin-right: 10px;
     }
   
-    /* === Pie (left) + Legend (right) layout === */
-    #category-flex {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      flex-wrap: nowrap;
-      gap: 12px;
+    /* === Unified pie layout (PC & Mobile): pie on top (left-aligned), vertical legend below === */
+    #category-container {
       width: 100%;
       max-width: 1000px;
+      margin-top: 20px;
     }
-    /* Mobile-first: half-half layout */
+    #category-chart-wrap {
+      width: 100%;
+      max-width: 600px;
+      aspect-ratio: 1 / 1;
+    }
     #category-chart {
-      flex: 1 1 50%;
-      max-width: 50%;
-      height: auto;
+      width: 100%;
+      height: 100%;
+      display: block;
     }
- 
     #category-legend {
       display: flex;
-      flex-direction: column;       /* ★縦方向に並べる */
+      flex-direction: column;
       align-items: flex-start;
       gap: 8px;
-      overflow-y: auto;             /* スクロール可（必要に応じて） */
-      max-height: 500px;            /* PCの円グラフに高さ合わせ */
-      padding-top: 8px;
+      margin-top: 10px;
+      max-height: 320px;
+      overflow-y: auto;
+      padding-right: 6px;
       font-size: 0.9rem;
       line-height: 1.4;
     }
-
-
     #category-legend .item {
       display: flex;
       align-items: center;
@@ -86,16 +84,8 @@
       width: 12px; height: 12px; border-radius: 2px; margin-right: 6px;
       border: 1px solid rgba(0,0,0,0.15);
     }
-    /* Desktop: fix pie diameter to 500px and pin left */
     @media (min-width: 1024px) {
-      #category-chart {
-        flex: 0 0 600px;
-        width: 600px;
-        height: 600px;
-      }
-      #category-legend {
-        flex: 1 1 auto;
-      }
+      #category-chart-wrap { max-width: 600px; }
     }
 
   </style>
@@ -181,10 +171,10 @@
 
   
   <div id="category-container" style="display: none; margin-top: 20px;">
-    <div id="category-flex">
+      <div id="category-chart-wrap">
       <canvas id="category-chart"></canvas>
-      <div id="category-legend"></div>
     </div>
+    <div id="category-legend"></div>
   </div>
   <script src="script.js"></script>
 </body>
