@@ -47,7 +47,7 @@
       margin-right: 10px;
     }
   
-    
+    /* === Unified pie layout (PC & Mobile): pie on top (left-aligned), vertical legend below === */
     #category-container {
       width: 100%;
       max-width: 1000px;
@@ -89,7 +89,7 @@
     }
 
   
-    /* === Side-by-side pie (left) + vertical legend (right) for PC & Mobile === */
+    /* === Category (pie) area ONLY === */
     #category-flex {
       display: flex;
       align-items: flex-start;
@@ -99,18 +99,12 @@
       max-width: 1000px;
       overflow: visible;
     }
-    /* Mobile-first: left half square pie */
     #pie-wrap {
       flex: 1 1 50%;
       max-width: 50%;
-      aspect-ratio: 1 / 1;       /* keep square on mobile */
+      aspect-ratio: 1 / 1;
     }
-    #category-chart {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-    /* Legend: vertical single column */
+    #category-chart { width: 100%; height: 100%; display: block; }
     #category-legend {
       flex: 1 1 50%;
       display: flex;
@@ -122,30 +116,19 @@
       padding-right: 6px;
       font-size: 0.9rem;
       line-height: 1.4;
-      min-width: 0;              /* allow shrink in flex */
+      min-width: 0;
     }
-    #category-legend .item {
-      display: flex;
-      align-items: center;
-      white-space: nowrap;
-      flex: 0 0 auto;
-    }
+    #category-legend .item { display: flex; align-items: center; white-space: nowrap; flex: 0 0 auto; }
     #category-legend .swatch {
       width: 12px; height: 12px; border-radius: 2px; margin-right: 6px;
       border: 1px solid rgba(0,0,0,0.15);
     }
-    /* Desktop: fix pie to 500x500 left; legend gets remaining width and matches height */
     @media (min-width: 1024px) {
       #pie-wrap {
         flex: 0 0 500px;
-        width: 500px;
-        height: 500px;     /* diameter 500px */
-        aspect-ratio: auto;/* height controls the size */
+        width: 500px; height: 500px; aspect-ratio: auto;
       }
-      #category-legend {
-        flex: 1 1 auto;
-        max-height: 500px; /* align with pie height */
-      }
+      #category-legend { flex: 1 1 auto; max-height: 500px; }
     }
 
   </style>
@@ -231,6 +214,7 @@
 
   
   <div id="category-container" style="display: none; margin-top: 20px;">
+    <h3>ランキング区分</h3>
     <div id="category-flex">
       <div id="pie-wrap">
         <canvas id="category-chart"></canvas>
