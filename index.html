@@ -3,17 +3,47 @@
 <head>
   <meta charset="UTF-8" />
   <title>Podcastランキング一覧</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, "Hiragino Kaku Gothic ProN", Meiryo, "Noto Sans JP", sans-serif; }
+    h1 { margin-bottom: 0.5rem; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 16px; }
+    .grid { display: grid; gap: 18px; grid-template-columns: 1fr; }
+    @media (min-width: 840px) { .grid { grid-template-columns: 1fr 1fr; } }
+    section { border: 1px solid #ddd; border-radius: 10px; padding: 14px; }
+    section > h2 { margin-top: 0; font-size: 1.1rem; }
+    ul { margin: 0.5rem 0 0 1rem; }
+  </style>
 </head>
 <body>
-  <h1>二番経営 〜組織を支えるNo.2の悲喜こもごも〜 
-　<br> オーツー・パートナーズ × Chronicle<br>
-　<br>Podcast ランキング 一覧</h1>
-  <ul>
-    <li><a href="./apple2/">Apple Podcast 総合</a></li>
-    <li><a href="./apple3/">Apple Podcast マネージメント</a></li>
-    <li><a href="./apple1/">Apple Podcast ビジネス</a></li>
-    <li><a href="./spotify/">Spotify 総合</a></li>
-    <li><a href="./amazon/">Amazon Music 総合</a></li>
-  </ul>
+  <div class="wrap">
+    <h1>Podcast ランキング 一覧
+    </h1>
+
+    <div class="grid">
+      <!-- 二番経営ブロック（既存リンクをそのまま） -->
+      <section>
+        <h2>🎙️ 二番経営 〜組織を支えるNo.2の悲喜こもごも〜 
+      　<br> オーツー・パートナーズ × Chronicle<br>
+      　</h2>
+        <ul>
+          <li><a href="./apple2/">Apple Podcast 総合</a></li>
+          <li><a href="./apple3/">Apple Podcast マネージメント</a></li>
+          <li><a href="./apple1/">Apple Podcast ビジネス</a></li>
+          <li><a href="./spotify/">Spotify 総合</a></li>
+          <li><a href="./amazon/">Amazon Music 総合</a></li>
+        </ul>
+      </section>
+
+      <!-- 製造業ブロック（sei1/2/3 をお好みで差し替え） -->
+      <section>
+        <h2>🏭 製造業進化論 －技術とデジタルと経営と－</h2>
+        <ul>
+          <li><a href="./sei2/">製造業進化論 Apple Podcast 総合</a></li>
+          <li><a href="./sei3/">製造業進化論 Apple Podcast マネージメント</a></li>
+          <li><a href="./sei1/">製造業進化論 Apple Podcast ビジネス</a></li>
+        </ul>
+      </section>
+    </div>
+  </div>
 </body>
 </html>
