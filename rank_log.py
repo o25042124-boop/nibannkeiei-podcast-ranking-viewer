@@ -18,6 +18,9 @@ URL_CONFIGS = [
     {"name": "apple3", "url": "https://podcastranking.jp/1734101813/chart.json?page=1&category=1491", "display_title": "ApplePodcast 「マネージメント」カテゴリー"},
     {"name": "spotify", "url": "https://podcastranking.jp/1734101813/chart.spotify.json?page=1&category=人気のポッドキャスト", "display_title": "Spotify 人気ランキング"},
     {"name": "amazon", "url": "https://podcastranking.jp/1734101813/chart.amazon.json?page=1&category=人気のポッドキャスト", "display_title": "Amazon Music 人気ランキング"},
+    {"name": "sei1", "url": "https://podcastranking.jp/1842025653/chart.json?page=1&category=1321", "display_title": "製造業進化論 ApplePodcast 「ビジネス」カテゴリー"},
+    {"name": "sei2", "url": "https://podcastranking.jp/1842025653/chart.json?page=1&category=26", "display_title": "製造業進化論 ApplePodcast 総合ランキング"},
+    {"name": "sei3", "url": "https://podcastranking.jp/1842025653/chart.json?page=1&category=1491", "display_title": "製造業進化論 ApplePodcast 「マネージメント」カテゴリー"},
 ]
 
 EXCEL_DIR = "excel"
