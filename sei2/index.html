@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Podcast ranking viewer</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 20px;
+    }
+
+    #chart-container, #table-container {
+      width: 100%;
+      max-width: 1000px;
+      height: 500px;
+      margin-top: 20px;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px 12px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #f4f4f4;
+    }
+
+    .controls {
+      margin-bottom: 10px;
+    }
+
+    .controls > * {
+      margin-right: 10px;
+    }
+  
+    /* === Unified pie layout (PC & Mobile): pie on top (left-aligned), vertical legend below === */
+    #category-container {
+      width: 100%;
+      max-width: 1000px;
+      margin-top: 20px;
+    }
+    #category-chart-wrap {
+      width: 100%;
+      max-width: 600px;
+      aspect-ratio: 1 / 1;
+    }
+    #category-chart {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    #category-legend {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      margin-top: 10px;
+      max-height: 320px;
+      overflow-y: auto;
+      padding-right: 6px;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+    #category-legend .item {
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+    }
+    #category-legend .swatch {
+      width: 12px; height: 12px; border-radius: 2px; margin-right: 6px;
+      border: 1px solid rgba(0,0,0,0.15);
+    }
+    @media (min-width: 1024px) {
+      #category-chart-wrap { max-width: 600px; }
+    }
+
+  
+    /* === Category (pie) area ONLY === */
+    #category-flex {
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+      gap: 12px;
+      width: 100%;
+      max-width: 1000px;
+      overflow: visible;
+    }
+    #pie-wrap {
+      flex: 1 1 50%;
+      max-width: 50%;
+      aspect-ratio: 1 / 1;
+    }
+    #category-chart { width: 100%; height: 100%; display: block; }
+    #category-legend {
+      flex: 1 1 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      max-height: 100%;
+      overflow-y: auto;
+      padding-right: 6px;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      min-width: 0;
+    }
+    #category-legend .item { display: flex; align-items: center; white-space: nowrap; flex: 0 0 auto; }
+    #category-legend .swatch {
+      width: 12px; height: 12px; border-radius: 2px; margin-right: 6px;
+      border: 1px solid rgba(0,0,0,0.15);
+    }
+    @media (min-width: 1024px) {
+      #pie-wrap {
+        flex: 0 0 500px;
+        width: 500px; height: 500px; aspect-ratio: auto;
+      }
+      #category-legend { flex: 1 1 auto; max-height: 500px; }
+    }
+
+  </style>
+</head>
+<body>
+  <div style="text-align: right; margin-bottom: 10px;">
+    <a href="https://o25042124-boop.github.io/nibannkeiei-podcast-ranking-viewer/" style="text-decoration: none; color: #007bff;">一覧に戻る</a>
+
+  </div>
+
+  <h1>製造業進化論　Apple Podcast 総合ランキング遷移</h1>
+  <p id="last-updated" style="color: gray;">最終更新日時: 取得中...</p>
+
+  <!-- 操作ボタン -->
+  <div class="controls">
+    <button id="btn-show-chart">グラフ表示</button>
+    <button id="btn-show-table">表表示</button>
+    <button id="btn-show-category">ランキング区分表示</button>
+  </div>
+
+  <!-- 詳細設定フィルタ -->
+  <details>
+    <summary style="cursor: pointer; font-weight: bold;">🔍 詳細フィルタ設定</summary>
+    <div class="controls" style="margin-top: 10px;">
+      <label for="filter-year">年:</label>
+      <select id="filter-year"><option value="">すべて</option></select>
+
+      <label for="filter-month">月:</label>
+      <select id="filter-month"><option value="">すべて</option></select>
+
+      <label for="filter-weekday">曜日:</label>
+      <select id="filter-weekday">
+        <option value="">すべて</option>
+        <option value="月">月</option>
+        <option value="火">火</option>
+        <option value="水">水</option>
+        <option value="木">木</option>
+        <option value="金">金</option>
+        <option value="土">土</option>
+        <option value="日">日</option>
+      </select>
+
+
+      <label for="filter-start-date">開始日:</label>
+      <input type="date" id="filter-start-date" />
+
+      <label for="filter-end-date">終了日:</label>
+      <input type="date" id="filter-end-date" />
+
+      <br>
+
+      <button class="quick-filter" data-range="today">今日</button>
+      <button class="quick-filter" data-range="week">今週</button>
+      <button class="quick-filter" data-range="month">今月</button>
+      <button class="quick-filter" data-range="year">今年</button>
+
+      <br>
+
+      <button id="btn-apply-filters">絞り込み</button>
+      <button id="btn-reset-filters">リセット</button>
+    </div>
+  </details>
+
+  <!-- グラフ -->
+  <div id="chart-container">
+    <canvas id="chart"></canvas>
+  </div>
+
+  <!-- 表 -->
+  <div id="table-container" style="display: none;">
+    <table id="ranking-table">
+      <thead>
+        <tr>
+          <th>日付</th>
+          <th>曜日</th>
+          <th>時刻</th>
+          <th>ランキング</th>
+        </tr>
+      </thead>
+      <tbody id="ranking-table-body"></tbody>
+    </table>
+  </div>
+
+  
+  <div id="category-container" style="display: none; margin-top: 20px;">
+    <div id="category-flex">
+      <div id="pie-wrap">
+        <canvas id="category-chart"></canvas>
+      </div>
+      <div id="category-legend"></div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
