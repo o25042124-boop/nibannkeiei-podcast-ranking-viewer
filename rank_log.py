@@ -10,6 +10,9 @@ import os
 from datetime import datetime
 import re
 import json
+from zoneinfo import ZoneInfo
+JST = ZoneInfo("Asia/Tokyo")
+
 
 # --- 設定 ---
 URL_CONFIGS = [
@@ -157,7 +160,7 @@ for config in URL_CONFIGS:
 
     df_new = pd.DataFrame(entries).sort_values(by=["日付", "時刻"])
 
-    # --- チャート別フォルダ作成 ---
+      # --- チャート別フォルダ作成 ---
     os.makedirs(name, exist_ok=True)
 
     # 先に旧JSONを読む（年推定の起点に使う）
@@ -173,47 +176,50 @@ for config in URL_CONFIGS:
         except Exception as e:
             print(f"⚠ 旧JSON読み込みエラー: {e}")
 
-    # 旧データが無い場合の起点年を決める
-    now = datetime.now()
+    # JSONキーを循環ソート（順序崩れによる 2027 混入を防ぐ）
+    sorted_items, start_month = circular_sort_items(json_data)
+    if not sorted_items:
+        print(f"⚠ {name} に有効なデータがありません（日時キーが解析できません）")
+        continue
+
+    # 起点年を決める
+    now = datetime.now(JST)
+
     if last_dt is not None:
-        year = last_dt.year
-        prev_month = last_dt.month
+        base_year = last_dt.year
+        # last_dt が 1月なのに今回の取得先頭が 12月なら前年スタートに補正
+        if last_dt.month == 1 and start_month == 12:
+            base_year = last_dt.year - 1
     else:
-        # 取得データの先頭が12月で、今が1月なら前年起点にするのが自然
-        first_key = next(iter(json_data.keys()), None)
-        first_parsed = parse_time_key(first_key) if first_key else None
-        if first_parsed and now.month == 1 and first_parsed[0] == 12:
-            year = now.year - 1
-        else:
-            year = now.year
-        prev_month = None
+        base_year = now.year
+        # 実行が 1月で、取得先頭が 12月なら前年スタートにする
+        if now.month == 1 and start_month == 12:
+            base_year = now.year - 1
+
+    year = base_year
+    prev_month = None
 
     entries = []
-    for time_str, rank in json_data.items():
-        parsed = parse_time_key(time_str)
-        if not parsed:
-            print(f"⚠ パース失敗: {time_str}")
-            continue
-
+    for _, time_str, rank, parsed in sorted_items:
         month, day, hour, minute = parsed
 
-        # 月が戻ったら年越し
+        # 月が戻ったら年越し（循環ソート済みなので基本1回だけ発生）
         if prev_month is not None and month < prev_month:
             year += 1
 
-        dt = datetime(year, month, day, hour, minute)
+        dt = datetime(year, month, day, hour, minute, tzinfo=JST)
         date_str = dt.strftime("%Y/%m/%d")
         weekday = compute_weekday_jp(date_str)
 
         entries.append({
             "日付": date_str,
             "曜日": weekday,
-            "時刻": hour,          # 既存仕様に合わせて hour だけ残す
-            "ランキング": int(rank)
+            "時刻": int(hour),
+            "ランキング": int(rank),
         })
 
         prev_month = month
-        last_dt = dt  # 更新
+        last_dt = dt
 
     if not entries:
         print(f"⚠ {name} にデータなし")
@@ -221,12 +227,13 @@ for config in URL_CONFIGS:
 
     df_new = pd.DataFrame(entries).sort_values(by=["日付", "時刻"])
 
-    # --- ここから下は今の処理でOK（結合・重複排除・保存） ---
+    # 旧JSONと結合して履歴を維持
     if df_old is not None and not df_old.empty:
         df_new = pd.concat([df_old, df_new], ignore_index=True)
         df_new.drop_duplicates(subset=["日付", "時刻"], inplace=True)
         df_new.sort_values(by=["日付", "時刻"], inplace=True)
 
+    # JSON出力
     df_new.to_json(json_path, orient="records", force_ascii=False, indent=2)
     print(f"✅ JSON保存完了: {json_path}")
 
