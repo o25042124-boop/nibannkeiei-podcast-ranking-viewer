@@ -11,6 +11,7 @@ from datetime import datetime
 import re
 import json
 from zoneinfo import ZoneInfo
+
 JST = ZoneInfo("Asia/Tokyo")
 
 
@@ -32,6 +33,7 @@ os.makedirs(EXCEL_DIR, exist_ok=True)
 email = os.environ.get("PODCAST_EMAIL")
 password = os.environ.get("PODCAST_PASSWORD")
 
+
 # --- Selenium ログイン ---
 options = Options()
 options.add_argument("--headless")
@@ -49,12 +51,13 @@ try:
     driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
     wait.until(EC.url_contains("/dashboard"))
     print("✅ ログイン成功")
-    cookies = {c['name']: c['value'] for c in driver.get_cookies()}
+    cookies = {c["name"]: c["value"] for c in driver.get_cookies()}
 except Exception as e:
     print(f"❌ ログイン失敗: {e}")
     cookies = {}
 finally:
     driver.quit()
+
 
 # --- 曜日取得関数 ---
 def compute_weekday_jp(date_str):
@@ -63,6 +66,7 @@ def compute_weekday_jp(date_str):
         return ["月", "火", "水", "木", "金", "土", "日"][dt.weekday()]
     except:
         return ""
+
 
 # --- 年を推定する関数 ---
 def year_guess_from_date_part(date_part, hour, latest_date=None):
@@ -82,6 +86,7 @@ def year_guess_from_date_part(date_part, hour, latest_date=None):
             return now.year + 1
         return now.year
 
+
 def parse_time_key(time_str: str):
     # "12/29(月) 13:00" / "12/29 13:00" の両対応
     m = re.match(r"(\d{2})/(\d{2})\([^)]+\)\s*(\d{2}):(\d{2})", time_str)
@@ -99,9 +104,48 @@ def get_last_dt_from_df(df):
         return None
     tmp = df.copy()
     tmp["時刻"] = tmp["時刻"].astype(int)
-    tmp["dt"] = pd.to_datetime(tmp["日付"] + " " + tmp["時刻"].astype(str).str.zfill(2) + ":00",
-                               format="%Y/%m/%d %H:%M", errors="coerce")
+    tmp["dt"] = pd.to_datetime(
+        tmp["日付"] + " " + tmp["時刻"].astype(str).str.zfill(2) + ":00",
+        format="%Y/%m/%d %H:%M",
+        errors="coerce",
+    )
     return tmp["dt"].max()
+
+
+# --- JSONキーを循環ソートする関数（未定義で落ちていたため追加） ---
+def circular_sort_items(json_data: dict):
+    items = []
+    months = set()
+
+    for time_str, rank in json_data.items():
+        parsed = parse_time_key(time_str)
+        if not parsed:
+            continue
+        m, d, h, minute = parsed
+        months.add(m)
+        items.append(((m, d, h, minute), time_str, rank, parsed))
+
+    if not items:
+        return [], None
+
+    # 通常ソート
+    items.sort(key=lambda x: x[0])
+
+    # 12月と1月が混在するなら12月開始に寄せる（年混入防止）
+    if 12 in months and 1 in months:
+        start_month = 12
+    else:
+        start_month = items[0][0][0]
+
+    # start_month の最初の位置へ回転
+    start_idx = 0
+    for i, it in enumerate(items):
+        if it[0][0] == start_month:
+            start_idx = i
+            break
+
+    items = items[start_idx:] + items[:start_idx]
+    return items, start_month
 
 
 # --- 各チャートの処理 ---
@@ -145,12 +189,14 @@ for config in URL_CONFIGS:
             date_str = dt.strftime("%Y/%m/%d")
             weekday = compute_weekday_jp(date_str)
 
-            entries.append({
-                "日付": date_str,
-                "曜日": weekday,
-                "時刻": int(hour),
-                "ランキング": int(rank)
-            })
+            entries.append(
+                {
+                    "日付": date_str,
+                    "曜日": weekday,
+                    "時刻": int(hour),
+                    "ランキング": int(rank),
+                }
+            )
         except Exception as e:
             print(f"⚠ パースエラー: {time_str} → {e}")
 
@@ -160,7 +206,7 @@ for config in URL_CONFIGS:
 
     df_new = pd.DataFrame(entries).sort_values(by=["日付", "時刻"])
 
-      # --- チャート別フォルダ作成 ---
+    # --- チャート別フォルダ作成 ---
     os.makedirs(name, exist_ok=True)
 
     # 先に旧JSONを読む（年推定の起点に使う）
@@ -211,12 +257,14 @@ for config in URL_CONFIGS:
         date_str = dt.strftime("%Y/%m/%d")
         weekday = compute_weekday_jp(date_str)
 
-        entries.append({
-            "日付": date_str,
-            "曜日": weekday,
-            "時刻": int(hour),
-            "ランキング": int(rank),
-        })
+        entries.append(
+            {
+                "日付": date_str,
+                "曜日": weekday,
+                "時刻": int(hour),
+                "ランキング": int(rank),
+            }
+        )
 
         prev_month = month
         last_dt = dt
@@ -236,8 +284,6 @@ for config in URL_CONFIGS:
     # JSON出力
     df_new.to_json(json_path, orient="records", force_ascii=False, indent=2)
     print(f"✅ JSON保存完了: {json_path}")
-
-    
 
     # --- Excel出力 ---
     excel_path = os.path.join(EXCEL_DIR, f"{name}.xlsx")
