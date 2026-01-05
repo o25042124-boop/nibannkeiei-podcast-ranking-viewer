@@ -111,6 +111,38 @@ def get_last_dt_from_df(df):
     )
     return tmp["dt"].max()
 
+def circular_sort_items(json_data: dict):
+    items = []
+    months = set()
+
+    for time_str, rank in json_data.items():
+        parsed = parse_time_key(time_str)
+        if not parsed:
+            continue
+        m, d, h, minute = parsed
+        months.add(m)
+        items.append(((m, d, h, minute), time_str, rank, parsed))
+
+    if not items:
+        return [], None
+
+    items.sort(key=lambda x: x[0])
+
+    if 12 in months and 1 in months:
+        start_month = 12
+    else:
+        start_month = items[0][0][0]
+
+    start_idx = 0
+    for i, it in enumerate(items):
+        if it[0][0] == start_month:
+            start_idx = i
+            break
+
+    items = items[start_idx:] + items[:start_idx]
+    return items, start_month
+
+
 
 # --- JSONキーを循環ソートする関数（未定義で落ちていたため追加） ---
 def circular_sort_items(json_data: dict):
